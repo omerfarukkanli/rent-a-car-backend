@@ -47,6 +47,7 @@ export class AuthService {
           email,
           firstName,
           lastName,
+          provider: 'google',
         });
       }
 

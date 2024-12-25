@@ -32,15 +32,4 @@ export class UserService {
       );
     }
   }
-
-  async findByGoogleId(googleId: string) {
-    try {
-      return await this.userModel.findOne({ googleId }).exec();
-    } catch (error) {
-      throw new HttpException(
-        error,
-        error.status ? error.status : HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
 }

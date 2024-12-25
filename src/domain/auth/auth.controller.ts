@@ -24,28 +24,32 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(@Req() req, @Res() res: Response) {
-    const user = await this.authService.googleSignIn(
+    const response = await this.authService.googleSignIn(
       req.user.email,
       req.user.firstName,
       req.user.lastName,
     );
-    res.send(user);
+    res.send(response);
+    return res.redirect('http://localhost:3000');
   }
 
   @Post('signup')
   async signup(@Body() userDto: RegisterUserDto, @Res() res: Response) {
-    const user = await this.authService.signup(
+    const response = await this.authService.signup(
       userDto.email,
       userDto.password,
       userDto.firstName,
       userDto.lastName,
     );
-    res.send(user);
+    res.send(response);
   }
 
   @Post('signin')
   async signin(@Body() userDto: LoginUserDto, @Res() res: Response) {
-    const user = await this.authService.login(userDto.email, userDto.password);
-    res.send(user);
+    const response = await this.authService.login(
+      userDto.email,
+      userDto.password,
+    );
+    res.send(response);
   }
 }

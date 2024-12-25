@@ -1,38 +1,44 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
 import googleConfig from 'src/config/google.config';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
     @Inject(googleConfig.KEY)
-    private configService: ConfigType<typeof googleConfig>,
+    configService: ConfigType<typeof googleConfig>,
   ) {
     super({
       clientID: configService.clientId,
       clientSecret: configService.clientSecret,
       callbackURL: configService.callbackURL,
-      scope: ['profile', 'email'],
+      scope: ['email', 'profile'],
     });
   }
 
   async validate(
-    _accessToken: string,
+    accessToken: string,
     _refreshToken: string,
-    profile: any,
+    profile: Profile,
     done: VerifyCallback,
-  ): Promise<any> {
-    const { id, name, emails } = profile;
+  ) {
+    try {
+      if (!profile || !profile.emails || !profile.name) {
+        throw new UnauthorizedException('Invalid profile data');
+      }
 
-    const user = {
-      provider: 'google',
-      providerId: id,
-      email: emails[0].value,
-      firstName: name.givenName,
-      lastName: name.familyName,
-    };
-    done(null, user);
+      const user = {
+        provider: 'google',
+        email: profile.emails[0].value,
+        firstName: profile.name.givenName,
+        lastName: profile.name.familyName,
+        accessToken,
+      };
+      return done(null, user);
+    } catch (error) {
+      return done(error, null);
+    }
   }
 }

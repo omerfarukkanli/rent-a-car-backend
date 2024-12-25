@@ -1,5 +1,4 @@
 export class createGoogleUserDto {
-  googleId: string;
   email: string;
   firstName: string;
   lastName: string;

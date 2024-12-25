@@ -8,29 +8,30 @@ import googleConfig from 'src/config/google.config';
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
     @Inject(googleConfig.KEY)
-    googleConfiguration: ConfigType<typeof googleConfig>,
+    private configService: ConfigType<typeof googleConfig>,
   ) {
     super({
-      clientID: googleConfiguration.clientId,
-      clientSecret: googleConfiguration.clientSecret,
-      callbackURL: googleConfiguration.callbackURL,
-      scope: ['email', 'profile'],
+      clientID: configService.clientId,
+      clientSecret: configService.clientSecret,
+      callbackURL: configService.callbackURL,
+      scope: ['profile', 'email'],
     });
   }
 
   async validate(
-    googleId: string,
-    accessToken: string,
+    _accessToken: string,
+    _refreshToken: string,
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {
-    const { name, emails } = profile;
+    const { id, name, emails } = profile;
+
     const user = {
+      provider: 'google',
+      providerId: id,
       email: emails[0].value,
       firstName: name.givenName,
       lastName: name.familyName,
-      googleId,
-      accessToken,
     };
     done(null, user);
   }

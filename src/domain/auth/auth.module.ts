@@ -5,9 +5,10 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { UserModule } from '../user/user.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [ConfigModule.forFeature(googleConfig), UserModule],
+  imports: [ConfigModule.forFeature(googleConfig), UserModule, JwtModule],
   controllers: [AuthController],
   providers: [AuthService, GoogleStrategy],
   exports: [],

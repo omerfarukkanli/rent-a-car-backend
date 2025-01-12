@@ -31,4 +31,88 @@ export class CarService {
       );
     }
   }
+
+  async getAllCars(): Promise<SuccessResponseDto | ErrorResponseDto> {
+    try {
+      const cars = await this.carModel.find().exec();
+      return new SuccessResponseDto(
+        true,
+        HttpStatus.OK,
+        'Cars Fetched Successfully',
+        cars,
+      );
+    } catch (error) {
+      return new ErrorResponseDto(
+        false,
+        HttpStatus.BAD_REQUEST,
+        error.message,
+        'car/getAll',
+      );
+    }
+  }
+
+  async getCarById(id: string): Promise<SuccessResponseDto | ErrorResponseDto> {
+    try {
+      const car = await this.carModel.findById(id).exec();
+      return new SuccessResponseDto(
+        true,
+        HttpStatus.OK,
+        'Car Fetched Successfully',
+        car,
+      );
+    } catch (error) {
+      return new ErrorResponseDto(
+        false,
+        HttpStatus.BAD_REQUEST,
+        error.message,
+        'car/getById',
+      );
+    }
+  }
+
+  async updateCar(
+    id: string,
+    createCarDto: CreateCarDto,
+  ): Promise<SuccessResponseDto | ErrorResponseDto> {
+    try {
+      const updatedCar = await this.carModel.findByIdAndUpdate(
+        id,
+        createCarDto,
+        { new: true },
+      );
+
+      return new SuccessResponseDto(
+        true,
+        HttpStatus.OK,
+        'Car Updated Successfully',
+        updatedCar,
+      );
+    } catch (error) {
+      return new ErrorResponseDto(
+        false,
+        HttpStatus.BAD_REQUEST,
+        error.message,
+        'car/update',
+      );
+    }
+  }
+
+  async deleteCar(id: string): Promise<SuccessResponseDto | ErrorResponseDto> {
+    try {
+      await this.carModel.findByIdAndDelete(id).exec();
+      return new SuccessResponseDto(
+        true,
+        HttpStatus.OK,
+        'Car Deleted Successfully',
+        null,
+      );
+    } catch (error) {
+      return new ErrorResponseDto(
+        false,
+        HttpStatus.BAD_REQUEST,
+        error.message,
+        'car/delete',
+      );
+    }
+  }
 }

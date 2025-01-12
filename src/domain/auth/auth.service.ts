@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { SuccessResponseDto } from 'src/generic/dto/SuccessResponseDto';
@@ -34,23 +34,6 @@ export class AuthService {
     );
   }
 
-  async googleSignIn(
-    email: string,
-    firstName: string,
-    lastName: string,
-  ): Promise<SuccessResponseDto | HttpException> {
-    let user = await this.userService.findOneByEmail(email);
-
-    if (!user) {
-      user = await this.userService.create({
-        email,
-        firstName,
-        lastName,
-        provider: 'google',
-      });
-    }
-    return this.createSuccessResponse(user);
-  }
   async signup(
     email: string,
     password: string,

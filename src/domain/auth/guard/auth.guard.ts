@@ -7,12 +7,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { FORBIDDEN_MESSAGE } from '@nestjs/core/guards';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import configuration from 'src/config/configuration';
 import { UserService } from 'src/domain/user/user.service';
-import { UserRoles } from 'src/generic/user.role';
+import { UserRoles } from 'src/generic/enum/user.role.enum';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -26,26 +25,46 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: configuration().jwt.secret,
-    });
-
-    if (!token) throw new UnauthorizedException();
-    const userRoleInDb: UserRoles | undefined =
-      await this.userService.findByEmailFromRole(payload.email);
-
-    if (!userRoleInDb)
-      throw new HttpException(FORBIDDEN_MESSAGE, HttpStatus.FORBIDDEN);
+    if (!token) {
+      throw new UnauthorizedException();
+    }
 
     try {
-      const payload = this.jwtService.verify(token, {
+      const payload = await this.jwtService.verifyAsync(token, {
         secret: configuration().jwt.secret,
       });
       request.user = payload;
-    } catch {
+      const userRoleInDb = await this.userService.findByEmailFromRole(
+        payload.email,
+      );
+
+      if (!userRoleInDb) {
+        throw new HttpException('User role not found', HttpStatus.FORBIDDEN);
+      }
+
+      const requiredRoles = this.reflector.get<UserRoles[]>(
+        'roles',
+        context.getHandler(),
+      );
+
+      if (
+        requiredRoles &&
+        requiredRoles.length > 0 &&
+        !requiredRoles.includes(userRoleInDb)
+      ) {
+        throw new HttpException(
+          'Insufficient permissions',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      return true;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new UnauthorizedException();
     }
-    return true;
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {

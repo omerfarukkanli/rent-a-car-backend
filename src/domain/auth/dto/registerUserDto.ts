@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { UserRoles } from 'src/generic/enum/user.role.enum';
 
 export class RegisterUserDto {
   @ApiProperty({ default: 'test@gmail.com' })
@@ -12,4 +13,6 @@ export class RegisterUserDto {
 
   @ApiProperty({ default: 'user' })
   lastName: string;
+
+  role: UserRoles;
 }
